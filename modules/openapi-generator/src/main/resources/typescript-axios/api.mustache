@@ -38,7 +38,7 @@ export class {{classname}}Resource {
 {{/formParams}}
         };
 {{/hasFormParams}}
-        let reqConfig = {
+        const reqConfig = {
             ...axiosConfig,
             method: '{{httpMethod}}' as Method,
             parameterizedPath,
