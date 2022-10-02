@@ -46,7 +46,7 @@ export class {{classname}}Resource {
             params: query{{/hasQueryParams}}{{#bodyParam}},
             data: body{{/bodyParam}}{{#hasFormParams}},
             headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
-            data: stringify(reqFormParams)
+            data: stringify(reqFormParams),
 {{/hasFormParams}}
 
         };
