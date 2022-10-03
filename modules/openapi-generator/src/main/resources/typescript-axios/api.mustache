@@ -1,6 +1,7 @@
 {{>licenseInfo}}
-import { AxiosRequestConfig, Method } from 'axios';
-import { axios } from '../axios.config';
+import axios, { AxiosRequestConfig, Method } from 'axios';
+
+import { axios as axiosClient, MambaApiError } from '../axios.config';
 {{#hasFormParams}}
 import { stringify } from 'qs';
 {{/hasFormParams}}
@@ -28,8 +29,8 @@ export class {{classname}}Resource {
      {{/isHeaderParam}}{{/isCookieParam}}{{/allParams}}
      */
     public {{nickname}}({{#allParams}}{{^isQueryParam}}{{^isCookieParam}}{{^isHeaderParam}}{{^isBodyParam}}{{paramName}}{{/isBodyParam}}{{#isBodyParam}}body{{/isBodyParam}}{{^required}}?{{/required}}: {{{dataType}}}, {{/isHeaderParam}}{{/isCookieParam}}{{/isQueryParam}}{{/allParams}}{{#hasQueryParams}}query?: { {{#queryParams}}{{#lambda.snakecase_param}}{{paramName}}{{/lambda.snakecase_param}}{{^required}}?{{/required}}: {{{dataType}}}{{^-last}},{{/-last}} {{/queryParams}}}, {{/hasQueryParams}}axiosConfig?: AxiosRequestConfig): Promise<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}{}{{/returnType}}> {
-        const parameterizedPath = '{{path}}';
-        const reqPath = parameterizedPath{{#pathParams}}
+        const apiRoute = '{{path}}';
+        const reqPath = apiRoute{{#pathParams}}
                     .replace('{' + '{{baseName}}}', String({{paramName}}{{#isDateTime}}.toISOString(){{/isDateTime}})){{/pathParams}};
 {{#hasFormParams}}
         let reqFormParams = {
@@ -41,7 +42,6 @@ export class {{classname}}Resource {
         const reqConfig = {
             ...axiosConfig,
             method: '{{httpMethod}}' as Method,
-            parameterizedPath,
             url: reqPath{{#hasQueryParams}},
             params: query{{/hasQueryParams}}{{#bodyParam}},
             data: body{{/bodyParam}}{{#hasFormParams}},
@@ -50,9 +50,16 @@ export class {{classname}}Resource {
 {{/hasFormParams}}
 
         };
-        return axios.request(reqConfig)
+        return axiosClient.request(reqConfig)
             .then(res => {
                 return res.data;
+            })
+            .catch(error => {
+                if (axios.isAxiosError(error)) {
+                    throw new MambaApiError({ apiRoute, error });
+                } else {
+                    throw error;
+                }
             });
     }
 
