@@ -1,0 +1,173 @@
+/* tslint:disable */
+/* eslint-disable */
+{{>licenseInfo}}
+import axios, { AxiosRequestConfig, Method, AxiosInstance, AxiosError } from 'axios';
+import qs from 'qs';
+import { HasRequiredKeys } from 'type-fest';
+
+
+{{#models}}
+{{#model}}import { {{classname}} } from './models/{{classname}}';{{/model}}
+{{/models}}
+
+type RequestInputOutput = {
+{{#apiInfo}}
+{{#apis}}
+{{#operations}}
+{{#operation}}
+{{^hasInputParams}}
+    '{{#lambda.uppercase}}{{httpMethod}}{{/lambda.uppercase}} {{{path}}}': [
+        input: never, response: {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
+    ]
+{{/hasInputParams}}
+{{#hasInputParams}}
+    '{{#lambda.uppercase}}{{httpMethod}}{{/lambda.uppercase}} {{{path}}}': [
+        input: {     
+            {{#pathParams}}
+            {{#lambda.snakecase_param}}{{paramName}}{{/lambda.snakecase_param}}{{^required}}?{{/required}}: {{{dataType}}},
+            {{/pathParams}}
+
+            {{#hasQueryParams}}
+            query?: { {{#queryParams}}{{#lambda.snakecase_param}}{{paramName}}{{/lambda.snakecase_param}}{{^required}}?{{/required}}: {{{dataType}}}, {{/queryParams}}},
+            {{/hasQueryParams}}
+
+            {{#hasBodyParam}}
+            {{#bodyParam}}
+            data{{^required}}?{{/required}}: {{{dataType}}}{{/bodyParam}},
+            {{/hasBodyParam}}
+
+            {{#hasFormParams}}
+            form: { {{#formParams}}{{#lambda.snakecase_param}}{{paramName}}{{/lambda.snakecase_param}}{{^required}}?{{/required}}: {{{dataType}}}, {{/formParams}}},
+            {{/hasFormParams}}
+        },
+        response: {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
+    ]
+{{/hasInputParams}}
+{{/operation}}
+{{/operations}}
+{{/apis}}
+{{/apiInfo}}
+}
+
+export class MambaApiError<TransformedData, RawData> extends AxiosError<
+  TransformedData,
+  RawData
+> {
+  public apiRoute: string;
+  public name = 'MambaApiError';
+
+  constructor({
+    apiRoute,
+    error,
+  }: {
+    apiRoute: string;
+    error: AxiosError<TransformedData, RawData>;
+  }) {
+    super(
+      error.message,
+      error.code,
+      error.config,
+      error.request,
+      error.response
+    );
+
+    this.apiRoute = apiRoute;
+  }
+}
+
+interface MambaApiClientOptions {
+  baseUrl?: string;
+  headers?: Headers;
+  onError?: (error: any) => void;
+}
+
+export class MambaApiClient {
+  private _axios: AxiosInstance;
+
+  constructor(options?: MambaApiClientOptions) {
+    this._axios = axios.create({
+      baseURL: options?.baseUrl ?? undefined,
+      withCredentials: true,
+      paramsSerializer: (params: any) =>
+        qs.stringify(params, { indices: false }),
+    });
+  }
+
+  configure(options: MambaApiClientOptions) {
+    if (options.baseUrl) {
+      this._axios.defaults.baseURL = options.baseUrl;
+    }
+
+    if (options.headers) {
+      const headers = Object.fromEntries(options.headers.entries());
+      this._axios.defaults.headers.common = headers;
+    }
+
+    const { onError } = options;
+    if (onError) {
+      this._axios.interceptors.response.use(
+        (response) => response,
+        (error) => {
+          onError(error);
+
+          return Promise.reject(error);
+        }
+      );
+    }
+  }
+
+  async request<P extends keyof RequestInputOutput>(
+    path: P,
+    ...args: RequestInputOutput[P][0] extends never
+      ? [config?: AxiosRequestConfig]
+      : HasRequiredKeys<RequestInputOutput[P][0]> extends true
+      ? [input: RequestInputOutput[P][0], config?: AxiosRequestConfig]
+      : [input?: RequestInputOutput[P][0], config?: AxiosRequestConfig]
+    ): Promise<RequestInputOutput[P][1]> {
+        if (!this._axios.defaults.baseURL) {
+        throw new Error(
+            'No baseUrl set for MambaApiClient. Call configure() before making requests.'
+        );
+        }
+
+        let [method, url] = path.split(' ');
+
+        const [input = {}, extraConfig = {}] = args;
+        // @ts-expect-error
+        const { data, query, form, ...pathParams } = input;
+
+        if (pathParams) {
+            url = url.replace(/{(\w+)}/g, (match, key: string) => {
+                // @ts-expect-error
+                return pathParams[key] || match;
+            });
+        }
+
+        const config: AxiosRequestConfig = {
+            ...extraConfig,
+            method: method as Method,
+            url,
+            params: query,
+            data,
+        }
+
+        if (form) {
+            config.headers = { 'Content-Type': 'application/x-www-form-urlencoded'};
+        }
+
+        return this._axios
+            .request(config)
+            .then((res) => {
+                return res.data;
+            })
+            .catch((error) => {
+                if (axios.isAxiosError(error)) {
+                    throw new MambaApiError({ apiRoute: url, error });
+                } else {
+                    throw error;
+                }
+            });
+    }
+
+}
+

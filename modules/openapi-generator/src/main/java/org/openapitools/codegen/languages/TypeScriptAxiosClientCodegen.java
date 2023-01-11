@@ -47,6 +47,7 @@ public class TypeScriptAxiosClientCodegen extends AbstractTypeScriptClientCodege
 
         modelTemplateFiles.put("model.mustache", ".ts");
         apiTemplateFiles.put("api.mustache", ".ts");
+        supportingFiles.add(new SupportingFile("client.mustache", "", "client.ts"));
 
         modelPackage = "models";
         apiPackage = "resources";

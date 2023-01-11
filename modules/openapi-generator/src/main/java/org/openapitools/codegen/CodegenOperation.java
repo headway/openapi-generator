@@ -88,6 +88,15 @@ public class CodegenOperation {
     }
 
     /**
+    * Check if there's body, form, query, or path params
+    *
+    * @return true if any exist, false otherwise
+    */
+    public boolean getHasInputParams() {
+        return getHasFormParams() || getHasBodyParam() || getHasQueryParams() || getHasPathParams();
+    } 
+
+    /**
      * Check if there's at least one header parameter
      *
      * @return true if header parameter exists, false otherwise

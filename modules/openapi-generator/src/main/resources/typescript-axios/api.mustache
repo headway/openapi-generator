@@ -1,7 +1,8 @@
 {{>licenseInfo}}
-import axios, { AxiosRequestConfig, Method } from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 
-import { axios as axiosClient, MambaApiError } from '../axios.config';
+import { mamba } from '../index';
+
 {{#hasFormParams}}
 import { stringify } from 'qs';
 {{/hasFormParams}}
@@ -28,39 +29,40 @@ export class {{classname}}Resource {
      {{#allParams}}{{^isCookieParam}}{{^isHeaderParam}}* @param {{paramName}} {{description}}
      {{/isHeaderParam}}{{/isCookieParam}}{{/allParams}}
      */
-    public {{nickname}}({{#allParams}}{{^isQueryParam}}{{^isCookieParam}}{{^isHeaderParam}}{{^isBodyParam}}{{paramName}}{{/isBodyParam}}{{#isBodyParam}}body{{/isBodyParam}}{{^required}}?{{/required}}: {{{dataType}}}, {{/isHeaderParam}}{{/isCookieParam}}{{/isQueryParam}}{{/allParams}}{{#hasQueryParams}}query?: { {{#queryParams}}{{#lambda.snakecase_param}}{{paramName}}{{/lambda.snakecase_param}}{{^required}}?{{/required}}: {{{dataType}}}{{^-last}},{{/-last}} {{/queryParams}}}, {{/hasQueryParams}}axiosConfig?: AxiosRequestConfig): Promise<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}{}{{/returnType}}> {
-        const apiRoute = '{{path}}';
-        const reqPath = apiRoute{{#pathParams}}
-                    .replace('{' + '{{baseName}}}', String({{paramName}}{{#isDateTime}}.toISOString(){{/isDateTime}})){{/pathParams}};
-{{#hasFormParams}}
-        let reqFormParams = {
-{{#formParams}}
-            {{baseName}}: {{paramName}}{{^-last}},{{/-last}}
-{{/formParams}}
-        };
-{{/hasFormParams}}
-        const reqConfig = {
-            ...axiosConfig,
-            method: '{{httpMethod}}' as Method,
-            url: reqPath{{#hasQueryParams}},
-            params: query{{/hasQueryParams}}{{#bodyParam}},
-            data: body{{/bodyParam}}{{#hasFormParams}},
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded'},
-            data: stringify(reqFormParams),
-{{/hasFormParams}}
+    public {{nickname}}({{#allParams}}{{^isQueryParam}}{{^isCookieParam}}{{^isHeaderParam}}{{^isBodyParam}}{{paramName}}{{/isBodyParam}}{{#isBodyParam}}body{{/isBodyParam}}{{^required}}?{{/required}}: {{{dataType}}}, {{/isHeaderParam}}{{/isCookieParam}}{{/isQueryParam}}{{/allParams}}{{#hasQueryParams}}query?: { {{#queryParams}}{{#lambda.snakecase_param}}{{paramName}}{{/lambda.snakecase_param}}{{^required}}?{{/required}}: {{{dataType}}}{{^-last}},{{/-last}} {{/queryParams}}}, {{/hasQueryParams}}axiosConfig?: AxiosRequestConfig): Promise<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}> {
+        const url = '{{httpMethod}} {{path}}' as const;
 
+
+        {{#hasInputParams}}
+        const input = {
+            {{#pathParams}}
+            {{#lambda.snakecase_param}}{{paramName}}{{/lambda.snakecase_param}}: {{paramName}},
+            {{/pathParams}}
+
+            {{#hasQueryParams}}
+            query,
+            {{/hasQueryParams}}
+
+            {{#hasBodyParam}}
+            data: body,
+            {{/hasBodyParam}}
+
+            {{#hasFormParams}}
+            form: {
+            {{#formParams}}
+                {{#lambda.snakecase_param}}{{baseName}}{{/lambda.snakecase_param}}: {{paramName}}{{^-last}},{{/-last}}
+            {{/formParams}}
+            }
+            {{/hasFormParams}}
         };
-        return axiosClient.request(reqConfig)
-            .then(res => {
-                return res.data;
-            })
-            .catch(error => {
-                if (axios.isAxiosError(error)) {
-                    throw new MambaApiError({ apiRoute, error });
-                } else {
-                    throw error;
-                }
-            });
+
+        return mamba.request(url, input, axiosConfig);
+        {{/hasInputParams}}
+        
+        {{^hasInputParams}}
+        return mamba.request(url, axiosConfig);
+        {{/hasInputParams}}
+
     }
 
 {{/operation}}
