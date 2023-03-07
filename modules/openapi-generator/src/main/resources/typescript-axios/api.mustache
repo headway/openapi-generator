@@ -51,7 +51,7 @@ export class {{classname}}Resource {
 
         };
 
-        let originalStacktrace: string | null = new Error().stack ?? null;
+        let originalStackTrace: string | null = new Error().stack ?? null;
 
         return axiosClient.request(reqConfig)
             .then(res => {
@@ -64,9 +64,9 @@ export class {{classname}}Resource {
 
                     // this will not include Axios' library code which is the source of the error.
                     // if we ever want to do that, we can use `${formattedError.stack}\n{originalStackTrace}
-                    formattedError.stack = originalStacktrace || formattedError.stack;
+                    formattedError.stack = originalStackTrace || formattedError.stack;
 
-                    originalStacktrace = null;
+                    originalStackTrace = null;
 
                     throw formattedError;
                 }
