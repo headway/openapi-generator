@@ -55,12 +55,17 @@ export class {{classname}}Resource {
 
         return axiosClient.request(reqConfig)
             .then(res => {
+                originalStackTrace = null
                 return res.data;
             })
             .catch(error => {
                 if (axios.isAxiosError(error)) {
                     const formattedError = new MambaApiError({ apiRoute, error });
+
+                    // this will not include Axios' library code which is the source of the error.
+                    // if we ever want to do that, we can use `${formattedError.stack}\n{originalStackTrace}
                     formattedError.stack = originalStacktrace || formattedError.stack;
+
                     originalStacktrace = null;
 
                     throw formattedError;
