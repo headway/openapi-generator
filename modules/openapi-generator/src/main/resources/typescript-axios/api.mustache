@@ -50,16 +50,23 @@ export class {{classname}}Resource {
 {{/hasFormParams}}
 
         };
+
+        let originalStacktrace: string | null = new Error().stack ?? null;
+
         return axiosClient.request(reqConfig)
             .then(res => {
                 return res.data;
             })
             .catch(error => {
                 if (axios.isAxiosError(error)) {
-                    throw new MambaApiError({ apiRoute, error });
-                } else {
-                    throw error;
+                    const formattedError = new MambaApiError({ apiRoute, error });
+                    formattedError.stack = originalStacktrace || formattedError.stack;
+                    originalStacktrace = null;
+
+                    throw formattedError;
                 }
+
+                throw error;
             });
     }
 
