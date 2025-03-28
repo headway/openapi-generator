@@ -10,3 +10,15 @@ export enum {{classname}} {
 {{/enumVars}}
 {{/allowableValues}}
 }
+
+
+export const {{classname}}Metadata: EnumMetadata<{{classname}}> = {
+    name: '{{classname}}',
+    values: {
+        {{#allowableValues}}
+        {{#enumVars}}
+            {{{name}}}: {{{value}}}{{^-last}},{{/-last}}
+        {{/enumVars}}
+        {{/allowableValues}}
+    }
+}
