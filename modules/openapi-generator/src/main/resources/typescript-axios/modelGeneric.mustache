@@ -31,9 +31,12 @@ export const {{classname}}Metadata: ModelMetadata<{{classname}}> = {
     properties: {
         {{#vars}}
             {{name}}: {
-                title: '{{title}}',
+                title: '{{#title}}{{title}}{{/title}}{{^title}}{{#lambda.titlecase}}{{name}}{{/lambda.titlecase}}{{/title}}',
                 type: '{{openApiType}}',
                 {{#dataFormat}}format: '{{dataFormat}}',{{/dataFormat}}
+                isEnum: {{#allowableValues}}true{{/allowableValues}}{{^allowableValues}}{{isEnum}}{{/allowableValues}}{{#isModel}},
+                isReference: true,
+                referenceType: '{{baseType}}'{{/isModel}}
             },
         {{/vars}}
     }
