@@ -24,3 +24,20 @@ export interface {{classname}} {{#parent}}extends models.{{{parent}}} {{/parent}
     {{/allowableValues}}
     }{{/isEnum}}{{/vars}}
 {{/hasEnums}}
+
+
+export const {{classname}}Metadata: ModelMetadata<{{classname}}> = {
+    name: '{{classname}}',
+    properties: {
+        {{#vars}}
+            {{name}}: {
+                title: '{{#title}}{{title}}{{/title}}{{^title}}{{#lambda.titlecase}}{{name}}{{/lambda.titlecase}}{{/title}}',
+                type: '{{openApiType}}',
+                {{#dataFormat}}format: '{{dataFormat}}',{{/dataFormat}}
+                isEnum: {{#allowableValues}}true{{/allowableValues}}{{^allowableValues}}{{isEnum}}{{/allowableValues}}{{#isModel}},
+                isReference: true,
+                referenceType: '{{baseType}}'{{/isModel}}
+            },
+        {{/vars}}
+    }
+}
