@@ -13,14 +13,16 @@ export enum {{classname}} {
 {{/allowableValues}}
 }
 
-
 export const {{classname}}Metadata: EnumMetadata<{{classname}}> = {
+    metadataType: 'enum',
     name: '{{classname}}',
     values: {
-        {{#allowableValues}}
-        {{#enumVars}}
-            {{{name}}}: {{{value}}}{{^-last}},{{/-last}}
-        {{/enumVars}}
-        {{/allowableValues}}
+        {{#vendorExtensions.x-enum-metadata}}
+        [{{classname}}.{{name}}]: {
+            name: "{{name}}",
+            value: {{classname}}.{{name}},
+            label: "{{label}}"  
+        },
+        {{/vendorExtensions.x-enum-metadata}}
     }
 }

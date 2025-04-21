@@ -29,17 +29,22 @@ export interface {{classname}} {{#parent}}extends models.{{{parent}}} {{/parent}
 
 
 export const {{classname}}Metadata: ModelMetadata<{{classname}}> = {
+    metadataType: 'model',
     name: '{{classname}}',
     properties: {
         {{#vars}}
             {{name}}: {
                 title: '{{#title}}{{title}}{{/title}}{{^title}}{{#lambda.titlecase}}{{name}}{{/lambda.titlecase}}{{/title}}',
-                type: '{{openApiType}}',
-                {{#dataFormat}}format: '{{dataFormat}}',{{/dataFormat}}
-                isEnum: {{#allowableValues}}true{{/allowableValues}}{{^allowableValues}}{{isEnum}}{{/allowableValues}}{{#isModel}},
-                isReference: true,
-                referenceType: '{{baseType}}'{{/isModel}}
+                type: '{{{openApiType}}}',{{#isListContainer}}
+                arrayOf: '{{items.dataType}}',{{/isListContainer}}{{#dataFormat}}
+                format: '{{dataFormat}}',{{/dataFormat}}
+                required: {{required}},
             },
         {{/vars}}
+    },
+    references: {
+    {{#tsImports}}
+        "{{classname}}": {{classname}}Metadata,
+    {{/tsImports}}
     }
 }
