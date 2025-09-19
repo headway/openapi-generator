@@ -5,6 +5,10 @@ import {EnumMetadata} from '../metadata'
     * {{{description}}}
     */
 {{/description}}
+{{#vendorExtensions.x-enum-as-union}}
+export type {{classname}} = {{#allowableValues}}{{#enumVars}}{{{value}}}{{^-last}} | {{/-last}}{{/enumVars}}{{/allowableValues}};
+{{/vendorExtensions.x-enum-as-union}}
+{{^vendorExtensions.x-enum-as-union}}
 export enum {{classname}} {
 {{#allowableValues}}
 {{#enumVars}}
@@ -12,7 +16,9 @@ export enum {{classname}} {
 {{/enumVars}}
 {{/allowableValues}}
 }
+{{/vendorExtensions.x-enum-as-union}}
 
+{{! TODO: create a LiteralUnionMetadata for x-enum-as-union? }}
 export const {{classname}}Metadata: EnumMetadata<{{classname}}> = {
     metadataType: 'enum',
     name: '{{classname}}',
@@ -21,7 +27,7 @@ export const {{classname}}Metadata: EnumMetadata<{{classname}}> = {
         [{{classname}}.{{name}}]: {
             name: "{{name}}",
             value: {{classname}}.{{name}},
-            label: "{{label}}"  
+            label: "{{label}}"
         },
         {{/vendorExtensions.x-enum-metadata}}
     }
