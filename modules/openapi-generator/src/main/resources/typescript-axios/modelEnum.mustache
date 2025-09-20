@@ -18,15 +18,14 @@ export enum {{classname}} {
 }
 {{/vendorExtensions.x-enum-as-union}}
 
-{{! TODO: create a LiteralUnionMetadata for x-enum-as-union? }}
 export const {{classname}}Metadata: EnumMetadata<{{classname}}> = {
     metadataType: 'enum',
     name: '{{classname}}',
     values: {
         {{#vendorExtensions.x-enum-metadata}}
-        [{{classname}}.{{name}}]: {
+        [{{#vendorExtensions.x-enum-as-union}}"{{value}}"{{/vendorExtensions.x-enum-as-union}}{{^vendorExtensions.x-enum-as-union}}{{classname}}.{{name}}{{/vendorExtensions.x-enum-as-union}}]: {
             name: "{{name}}",
-            value: {{classname}}.{{name}},
+            value: {{#vendorExtensions.x-enum-as-union}}"{{value}}"{{/vendorExtensions.x-enum-as-union}}{{^vendorExtensions.x-enum-as-union}}{{classname}}.{{name}}{{/vendorExtensions.x-enum-as-union}},
             label: "{{label}}"
         },
         {{/vendorExtensions.x-enum-metadata}}
