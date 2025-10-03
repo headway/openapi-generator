@@ -5,6 +5,10 @@ import {EnumMetadata} from '../metadata'
     * {{{description}}}
     */
 {{/description}}
+{{#vendorExtensions.x-enum-as-union}}
+export type {{classname}} = {{#allowableValues}}{{#enumVars}}{{{value}}}{{^-last}} | {{/-last}}{{/enumVars}}{{/allowableValues}};
+{{/vendorExtensions.x-enum-as-union}}
+{{^vendorExtensions.x-enum-as-union}}
 export enum {{classname}} {
 {{#allowableValues}}
 {{#enumVars}}
@@ -12,16 +16,17 @@ export enum {{classname}} {
 {{/enumVars}}
 {{/allowableValues}}
 }
+{{/vendorExtensions.x-enum-as-union}}
 
 export const {{classname}}Metadata: EnumMetadata<{{classname}}> = {
     metadataType: 'enum',
     name: '{{classname}}',
     values: {
         {{#vendorExtensions.x-enum-metadata}}
-        [{{classname}}.{{name}}]: {
+        [{{#vendorExtensions.x-enum-as-union}}"{{value}}"{{/vendorExtensions.x-enum-as-union}}{{^vendorExtensions.x-enum-as-union}}{{classname}}.{{name}}{{/vendorExtensions.x-enum-as-union}}]: {
             name: "{{name}}",
-            value: {{classname}}.{{name}},
-            label: "{{label}}"  
+            value: {{#vendorExtensions.x-enum-as-union}}"{{value}}"{{/vendorExtensions.x-enum-as-union}}{{^vendorExtensions.x-enum-as-union}}{{classname}}.{{name}}{{/vendorExtensions.x-enum-as-union}},
+            label: "{{label}}"
         },
         {{/vendorExtensions.x-enum-metadata}}
     }

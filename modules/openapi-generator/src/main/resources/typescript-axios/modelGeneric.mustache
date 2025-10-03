@@ -18,13 +18,19 @@ export interface {{classname}} {{#parent}}extends models.{{{parent}}} {{/parent}
 
 {{#hasEnums}}
 {{#vars}}{{#isEnum}}
+    {{#vendorExtensions.x-enum-as-union}}
+    export type {{classname}}{{enumName}} = {{#allowableValues}}{{#enumVars}}{{{value}}}{{^-last}} | {{/-last}}{{/enumVars}}{{/allowableValues}};
+    {{/vendorExtensions.x-enum-as-union}}
+    {{^vendorExtensions.x-enum-as-union}}
     export enum {{classname}}{{enumName}} {
     {{#allowableValues}}
         {{#enumVars}}
             {{{name}}} = {{{value}}}{{^-last}},{{/-last}}
         {{/enumVars}}
     {{/allowableValues}}
-    }{{/isEnum}}{{/vars}}
+    }
+    {{/vendorExtensions.x-enum-as-union}}
+{{/isEnum}}{{/vars}}
 {{/hasEnums}}
 
 
